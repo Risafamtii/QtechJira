@@ -7,9 +7,8 @@ import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import TicketListPage from '../pages/tickets/TicketListPage';
-import CreateTicketPage from '../pages/tickets/CreateTicketPage';
+import TicketDetailsPage from '../pages/tickets/TicketDetailsPage';
 import UserManagementPage from '../pages/users/UserManagementPage';
-import PlaceholderPage from '../components/common/PlaceholderPage';
 
 const { ADMIN, AGENT, USER } = ROLES;
 
@@ -24,32 +23,30 @@ const AppRouter = () => (
       <Route element={<AppLayout />}>
         {/* All roles */}
         <Route path="/dashboard" element={<DashboardPage />} />
+        {/* Ticket details — access enforced by the API per role */}
+        <Route path="/tickets/:id" element={<TicketDetailsPage />} />
 
         {/* Admin */}
         <Route element={<RoleRoute allow={[ADMIN]} />}>
           <Route
             path="/admin/tickets"
-            element={<PlaceholderPage title="Ticket Management" />}
+            element={<TicketListPage title="Ticket Management" />}
           />
           <Route path="/admin/users" element={<UserManagementPage />} />
-          <Route path="/tickets" element={<TicketListPage />} />
+          <Route path="/tickets" element={<TicketListPage title="All Tickets" />} />
         </Route>
 
         {/* Agent */}
         <Route element={<RoleRoute allow={[AGENT]} />}>
           <Route
             path="/tickets/assigned"
-            element={<PlaceholderPage title="Assigned Tickets" />}
+            element={<TicketListPage title="Assigned Tickets" />}
           />
         </Route>
 
         {/* User */}
         <Route element={<RoleRoute allow={[USER]} />}>
-          <Route
-            path="/tickets/my"
-            element={<PlaceholderPage title="My Tickets" />}
-          />
-          <Route path="/tickets/create" element={<CreateTicketPage />} />
+          <Route path="/tickets/my" element={<TicketListPage title="My Tickets" />} />
         </Route>
       </Route>
     </Route>

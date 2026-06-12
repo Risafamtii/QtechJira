@@ -11,7 +11,6 @@ export const NAV_ITEMS = [
   { label: 'All Tickets', path: '/tickets', roles: [ADMIN] },
   { label: 'Assigned Tickets', path: '/tickets/assigned', roles: [AGENT] },
   { label: 'My Tickets', path: '/tickets/my', roles: [USER] },
-  { label: 'Create Ticket', path: '/tickets/create', roles: [USER] },
 ];
 
 export const itemsForRole = (role) =>

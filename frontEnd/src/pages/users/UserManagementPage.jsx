@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchUsers,
@@ -7,7 +7,7 @@ import {
   deleteUser,
 } from '../../features/users/usersSlice';
 import useAuth from '../../hooks/useAuth';
-import { ROLES } from '../../utils/constants';
+import { ROLES, PAGE_SIZE_OPTIONS } from '../../utils/constants';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
 import SelectField from '../../components/common/SelectField';
@@ -25,10 +25,12 @@ const ROLE_BADGE = {
 const UserManagementPage = () => {
   const dispatch = useDispatch();
   const { user: currentUser } = useAuth();
-  const { items, status, error } = useSelector((state) => state.users);
+  const { items, meta, status, error } = useSelector((state) => state.users);
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // modal: { mode: 'create' | 'edit', user? } | null
   const [modal, setModal] = useState(null);
@@ -39,21 +41,21 @@ const UserManagementPage = () => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Server-driven search/filter/pagination (debounced).
   useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return items.filter((u) => {
-      const matchesRole = roleFilter === 'All' || u.role === roleFilter;
-      const matchesTerm =
-        !term ||
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term);
-      return matchesRole && matchesTerm;
-    });
-  }, [items, search, roleFilter]);
+    const handler = setTimeout(() => {
+      dispatch(
+        fetchUsers({
+          search: search.trim() || undefined,
+          role: roleFilter === 'All' ? undefined : roleFilter,
+          page,
+          limit: pageSize,
+        })
+      );
+    }, 300);
+    return () => clearTimeout(handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, search, roleFilter, page, pageSize]);
 
   const openCreate = () => {
     setFormErrors(null);
@@ -120,7 +122,10 @@ const UserManagementPage = () => {
             label="Search"
             name="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Name or email"
           />
         </div>
@@ -129,7 +134,10 @@ const UserManagementPage = () => {
             label="Filter by role"
             name="roleFilter"
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={(e) => {
+              setRoleFilter(e.target.value);
+              setPage(1);
+            }}
             options={['All', ROLES.ADMIN, ROLES.AGENT, ROLES.USER]}
           />
         </div>
@@ -143,7 +151,7 @@ const UserManagementPage = () => {
           </div>
         ) : error ? (
           <div className="py-16 text-center text-sm text-red-600">{error}</div>
-        ) : filtered.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="py-16 text-center text-sm text-gray-500">
             No users found.
           </div>
@@ -158,7 +166,7 @@ const UserManagementPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((u) => {
+              {items.map((u) => {
                 const isSelf = u.id === currentUser?.id;
                 return (
                   <tr key={u.id} className="hover:bg-gray-50">
@@ -203,6 +211,47 @@ const UserManagementPage = () => {
               })}
             </tbody>
           </table>
+        )}
+
+        {/* Pagination */}
+        {status !== 'loading' && !error && items.length > 0 && (
+          <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-600">
+            <div className="flex items-center gap-3">
+              <span>
+                Page {meta.page} of {meta.totalPages} · {meta.total} total
+              </span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {PAGE_SIZE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                disabled={meta.page <= 1}
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={meta.page >= meta.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         )}
       </div>
 

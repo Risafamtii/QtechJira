@@ -44,6 +44,7 @@ export const deleteUser = createAsyncThunk(
 
 const initialState = {
   items: [],
+  meta: { page: 1, limit: 10, total: 0, totalPages: 1 },
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
@@ -61,7 +62,13 @@ const usersSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items = action.payload;
+        state.items = action.payload.items;
+        state.meta = {
+          page: action.payload.page,
+          limit: action.payload.limit,
+          total: action.payload.total,
+          totalPages: action.payload.totalPages,
+        };
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.status = 'failed';
@@ -70,6 +77,7 @@ const usersSlice = createSlice({
       // create — prepend in place, no refetch
       .addCase(createUser.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
+        state.meta.total += 1;
       })
       // update — replace by id
       .addCase(updateUser.fulfilled, (state, action) => {
@@ -79,6 +87,7 @@ const usersSlice = createSlice({
       // delete — filter out
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.items = state.items.filter((u) => u.id !== action.payload.id);
+        state.meta.total = Math.max(state.meta.total - 1, 0);
       });
   },
 });
