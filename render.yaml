@@ -1,0 +1,29 @@
+# Render blueprint for the QtechJira backend API.
+# Import via Render → New → Blueprint (point it at this repo).
+# Secret values (MONGODB_URI, JWT_SECRET, ADMIN_PASSWORD, FRONTEND_URL) are
+# marked sync:false — fill them in the Render dashboard after import.
+services:
+  - type: web
+    name: qtechjira-backend
+    runtime: node
+    rootDir: backEnd
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@example.com
+      - key: ADMIN_PASSWORD
+        sync: false
