@@ -13,8 +13,8 @@ A ticket management system with role-based access (Admin / Agent / User). React 
 | Role  | Email               | Password   |
 |-------|---------------------|------------|
 | Admin | admin@example.com   | Admin@123  |
-| Agent | agent@example.com   | Agent@123  |
-| User  | user@example.com    | User@123   |
+| Agent | agent1@example.com   | Agent@123  |
+| User  | user1@example.com    | User@123   |
 
 You can also sign up from the login page — new accounts are created as a normal User.
 
