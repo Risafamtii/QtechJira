@@ -16,6 +16,14 @@ const POPULATE = [
   { path: 'statusHistory.changedBy', select: 'name role' },
 ];
 
+// Base query scoping a user to the tickets they may see:
+// Admin → all, Agent → assigned to them, User → created by them.
+const roleScopeFilter = (user) => {
+  if (user.role === 'Agent') return { assignedTo: user._id };
+  if (user.role === 'User') return { createdBy: user._id };
+  return {};
+};
+
 const isOwner = (user, ticket) =>
   String(ticket.createdBy?._id || ticket.createdBy) === String(user._id);
 
@@ -77,9 +85,7 @@ const listTickets = async (user, query = {}) => {
   } = query;
 
   // Role scope.
-  const filter = {};
-  if (user.role === 'Agent') filter.assignedTo = user._id;
-  else if (user.role === 'User') filter.createdBy = user._id;
+  const filter = roleScopeFilter(user);
 
   if (status) filter.status = status;
   if (priority) filter.priority = priority;
@@ -200,6 +206,7 @@ const addComment = async (user, id, { message }) => {
 };
 
 module.exports = {
+  roleScopeFilter,
   createTicket,
   listTickets,
   getTicketById,

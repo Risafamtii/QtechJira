@@ -90,8 +90,8 @@ const TicketDetailsPage = () => {
   useEffect(() => {
     if (current && canAssignTicket(user)) {
       userApi
-        .listUsers({ role: 'Agent' })
-        .then(setAgents)
+        .listUsers({ role: 'Agent', limit: 1000 })
+        .then((res) => setAgents(res.items))
         .catch(() => setAgents([]));
     }
   }, [current, user]);

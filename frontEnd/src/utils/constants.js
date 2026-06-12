@@ -35,5 +35,12 @@ export const PRIORITY_BADGE = {
   Urgent: 'bg-red-100 text-red-700',
 };
 
+// Rows-per-page options for paginated tables.
+export const PAGE_SIZE_OPTIONS = [
+  { value: 10, label: '10 / page' },
+  { value: 25, label: '25 / page' },
+  { value: 50, label: '50 / page' },
+];
+
 export const TOKEN_KEY = 'tms_token';
 export const USER_KEY = 'tms_user';

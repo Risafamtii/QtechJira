@@ -3,11 +3,13 @@ const { sendSuccess } = require('../utils/apiResponse');
 const userService = require('../services/userService');
 
 const list = asyncHandler(async (req, res) => {
-  const users = await userService.listUsers({
+  const result = await userService.listUsers({
     role: req.query.role,
     search: req.query.search,
+    page: req.query.page,
+    limit: req.query.limit,
   });
-  return sendSuccess(res, 200, 'Users fetched', { users });
+  return sendSuccess(res, 200, 'Users fetched', result);
 });
 
 const getOne = asyncHandler(async (req, res) => {

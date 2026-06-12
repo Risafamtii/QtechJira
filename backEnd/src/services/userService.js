@@ -11,7 +11,7 @@ const httpError = (statusCode, message) => {
 // Admins may only assign Agent/User; anything else falls back to User.
 const clampRole = (role) => (ASSIGNABLE_ROLES.includes(role) ? role : 'User');
 
-const listUsers = async ({ role, search } = {}) => {
+const listUsers = async ({ role, search, page = 1, limit = 10 } = {}) => {
   const query = {};
   if (role && ASSIGNABLE_ROLES.concat('Admin').includes(role)) {
     query.role = role;
@@ -21,8 +21,22 @@ const listUsers = async ({ role, search } = {}) => {
     query.$or = [{ name: regex }, { email: regex }];
   }
 
-  const users = await User.find(query).sort({ createdAt: -1 });
-  return users.map(toPublicUser);
+  const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+  const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 1000);
+  const skip = (pageNum - 1) * limitNum;
+
+  const [users, total] = await Promise.all([
+    User.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+    User.countDocuments(query),
+  ]);
+
+  return {
+    items: users.map(toPublicUser),
+    page: pageNum,
+    limit: limitNum,
+    total,
+    totalPages: Math.max(Math.ceil(total / limitNum), 1),
+  };
 };
 
 const getUserById = async (id) => {

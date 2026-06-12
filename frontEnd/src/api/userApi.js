@@ -3,7 +3,7 @@ import axiosInstance from './axiosInstance';
 // Each function returns the unwrapped `data` payload from the common API shape.
 const listUsers = async (params = {}) => {
   const { data } = await axiosInstance.get('/users', { params });
-  return data.data.users;
+  return data.data; // { items, page, limit, total, totalPages }
 };
 
 const createUser = async (payload) => {

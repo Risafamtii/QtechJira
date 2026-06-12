@@ -15,6 +15,7 @@ import {
   STATUS_BADGE,
   PRIORITY_BADGE,
   ROLES,
+  PAGE_SIZE_OPTIONS,
 } from '../../utils/constants';
 import { formatDate } from '../../utils/formatDate';
 import { canEditTicket, canDeleteTicket } from '../../utils/ticketPermissions';
@@ -59,6 +60,7 @@ const TicketListPage = ({ title = 'Tickets' }) => {
     sort: 'createdAt:desc',
   });
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -80,13 +82,13 @@ const TicketListPage = ({ title = 'Tickets' }) => {
           sortBy,
           order,
           page,
-          limit: meta.limit,
+          limit: pageSize,
         })
       );
     }, 300);
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, search, filters, page]);
+  }, [dispatch, search, filters, page, pageSize]);
 
   const handleFilter = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -277,9 +279,25 @@ const TicketListPage = ({ title = 'Tickets' }) => {
         {/* Pagination */}
         {items.length > 0 && (
           <div className="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-600">
-            <span>
-              Page {meta.page} of {meta.totalPages} · {meta.total} total
-            </span>
+            <div className="flex items-center gap-3">
+              <span>
+                Page {meta.page} of {meta.totalPages} · {meta.total} total
+              </span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {PAGE_SIZE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="secondary"
