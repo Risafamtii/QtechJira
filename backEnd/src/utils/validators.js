@@ -39,4 +39,52 @@ const validateLogin = (body = {}) => {
   return errors;
 };
 
-module.exports = { validateRegister, validateLogin };
+// Roles an admin is allowed to assign through user management.
+const ASSIGNABLE_ROLES = ['Agent', 'User'];
+
+const validateCreateUser = (body = {}) => {
+  const errors = {};
+  const { name, email, password, role } = body;
+
+  if (!isNonEmptyString(name)) errors.name = 'Name is required';
+  if (!isNonEmptyString(email)) {
+    errors.email = 'Email is required';
+  } else if (!EMAIL_REGEX.test(email.trim())) {
+    errors.email = 'Email is invalid';
+  }
+  if (!isNonEmptyString(password)) {
+    errors.password = 'Password is required';
+  } else if (password.length < 6) {
+    errors.password = 'Password must be at least 6 characters';
+  }
+  if (role !== undefined && !ASSIGNABLE_ROLES.includes(role)) {
+    errors.role = `Role must be one of: ${ASSIGNABLE_ROLES.join(', ')}`;
+  }
+
+  return errors;
+};
+
+const validateUpdateUser = (body = {}) => {
+  const errors = {};
+  const { name, email, role } = body;
+
+  if (!isNonEmptyString(name)) errors.name = 'Name is required';
+  if (!isNonEmptyString(email)) {
+    errors.email = 'Email is required';
+  } else if (!EMAIL_REGEX.test(email.trim())) {
+    errors.email = 'Email is invalid';
+  }
+  if (!ASSIGNABLE_ROLES.includes(role)) {
+    errors.role = `Role must be one of: ${ASSIGNABLE_ROLES.join(', ')}`;
+  }
+
+  return errors;
+};
+
+module.exports = {
+  validateRegister,
+  validateLogin,
+  validateCreateUser,
+  validateUpdateUser,
+  ASSIGNABLE_ROLES,
+};
