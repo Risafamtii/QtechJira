@@ -42,6 +42,56 @@ const validateLogin = (body = {}) => {
 // Roles an admin is allowed to assign through user management.
 const ASSIGNABLE_ROLES = ['Agent', 'User'];
 
+const {
+  CATEGORIES,
+  PRIORITIES,
+  STATUSES,
+} = require('./ticketConstants');
+
+const validateTicketFields = (body = {}) => {
+  const errors = {};
+  const { title, description, category, priority } = body;
+
+  if (!isNonEmptyString(title)) errors.title = 'Title is required';
+  if (!isNonEmptyString(description))
+    errors.description = 'Description is required';
+  if (!CATEGORIES.includes(category)) {
+    errors.category = `Category must be one of: ${CATEGORIES.join(', ')}`;
+  }
+  if (!PRIORITIES.includes(priority)) {
+    errors.priority = `Priority must be one of: ${PRIORITIES.join(', ')}`;
+  }
+
+  return errors;
+};
+
+const validateCreateTicket = (body) => validateTicketFields(body);
+const validateUpdateTicket = (body) => validateTicketFields(body);
+
+const validateStatusUpdate = (body = {}) => {
+  const errors = {};
+  if (!STATUSES.includes(body.status)) {
+    errors.status = `Status must be one of: ${STATUSES.join(', ')}`;
+  }
+  return errors;
+};
+
+const validateAssign = (body = {}) => {
+  const errors = {};
+  if (!isNonEmptyString(body.assignedTo)) {
+    errors.assignedTo = 'An agent is required';
+  }
+  return errors;
+};
+
+const validateComment = (body = {}) => {
+  const errors = {};
+  if (!isNonEmptyString(body.message)) {
+    errors.message = 'Comment cannot be empty';
+  }
+  return errors;
+};
+
 const validateCreateUser = (body = {}) => {
   const errors = {};
   const { name, email, password, role } = body;
@@ -87,4 +137,9 @@ module.exports = {
   validateCreateUser,
   validateUpdateUser,
   ASSIGNABLE_ROLES,
+  validateCreateTicket,
+  validateUpdateTicket,
+  validateStatusUpdate,
+  validateAssign,
+  validateComment,
 };
